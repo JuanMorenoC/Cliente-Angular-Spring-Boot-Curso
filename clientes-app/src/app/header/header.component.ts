@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { TokenService } from '../usuarios/service/token.service';
 
 @Component({
   selector: 'app-header',
@@ -7,9 +8,20 @@ import { Component, OnInit } from '@angular/core';
 })
 export class HeaderComponent implements OnInit {
   tittle = 'App Angular';
-  constructor() { }
+  isLogged = false;
+  constructor(public tokenService: TokenService) { }
 
   ngOnInit(): void {
+    if (this.tokenService.getToken()) {
+      this.isLogged = true;
+    } else {
+      this.isLogged = false;
+    }
+  }
+
+  onLogOut(): void {
+    this.tokenService.logOut();
+    window.location.reload();
   }
 
 }

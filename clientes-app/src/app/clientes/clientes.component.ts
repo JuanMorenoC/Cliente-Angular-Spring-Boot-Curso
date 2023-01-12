@@ -4,6 +4,8 @@ import { Cliente } from './cliente';
 import Swal from 'sweetalert2';
 import { tap } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
+import { ModalService } from './detalle/modal.service';
+import { TokenService } from '../usuarios/service/token.service';
 
 @Component({
   selector: 'app-clientes',
@@ -13,10 +15,19 @@ import { ActivatedRoute } from '@angular/router';
 export class ClientesComponent implements OnInit {
   clientes: Cliente[];
   paginador: any;
-  constructor(private clienteService: ClienteService,
-    private activatedRoute: ActivatedRoute) { }
+  clienteSeleccionado:Cliente;
+  isAdmin = false;
+  isUser = false;
+  // roles: string[];
+  roles: string = '';
+  constructor(public clienteService: ClienteService,
+    public modalService: ModalService,
+    private activatedRoute: ActivatedRoute,
+    public tokenService: TokenService) {
+     }
 
   ngOnInit(): void {
+    this.rolesMuestra();
     this.activatedRoute.paramMap.subscribe(params => {
       let page:number = +params.get('page');
       if(!page){
@@ -35,6 +46,42 @@ export class ClientesComponent implements OnInit {
           this.paginador = response;
         });
     });
+
+    this.modalService.notificarUpload.subscribe(cliente => {
+      this.clientes = this.clientes.map(clienteOriginal => {
+        if(cliente.id == clienteOriginal.id){
+          clienteOriginal.foto = cliente.foto;
+        }
+        return clienteOriginal;
+      })
+    });
+
+    //this.roles = this.tokenService.getAuthorities();
+    /*
+    this.roles.forEach(rol => {
+      if (rol === 'ROLE_ADMIN') {
+        this.isAdmin = true;
+      } else if (rol === 'ROLE_USER'){
+        this.isUser = true;
+      }
+    });
+    */
+  }
+
+  rolesMuestra(): void {
+    this.roles = this.tokenService.getAuthorities();
+    if(this.roles !== ''){
+      if (this.roles === "admin") {
+        this.isAdmin = true;
+        this.isUser = true;
+      } 
+      if (this.roles !== "admin") {
+        this.isUser = true;
+      }
+    } else {
+      this.isUser = false;
+      this.isAdmin = false;
+    }
   }
 
   delete(cliente: Cliente): void {
@@ -61,6 +108,11 @@ export class ClientesComponent implements OnInit {
           )
         }
     });
+  }
+
+  abrirModal(cliente:Cliente){
+    this.clienteSeleccionado = cliente;
+    this.modalService.abrirModal();
   }
 
 }

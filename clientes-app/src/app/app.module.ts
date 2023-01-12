@@ -17,6 +17,16 @@ import { registerLocaleData } from '@angular/common';
 import localeES from '@angular/common/locales/es';
 import { PaginatorComponent } from './paginator/paginator.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { DetalleComponent } from './clientes/detalle/detalle.component';
+import { RegistroComponent } from './usuarios/auth/registro.component';
+import { LoginComponent } from './usuarios/auth/login.component';
+import { interceptorProvider } from './usuarios/interceptors/prod-interceptor.service';
+import { ProdGuardGuard as guard } from './usuarios/guards/prod-guard.guard';
+import { DetalleFacturaComponent } from './facturas/detalle-factura.component';
+import { FacturasComponent } from './facturas/facturas.component';
+import {MatAutocompleteModule} from '@angular/material/autocomplete';
+import {MatInputModule} from '@angular/material/input';
+import {MatFormFieldModule} from '@angular/material/form-field';
 registerLocaleData(localeES, 'es');
 
 
@@ -25,8 +35,12 @@ const routes: Routes = [
   {path: 'directivas', component: DirectivaComponent},
   {path: 'clientes', component: ClientesComponent},
   {path: 'clientes/page/:page', component: ClientesComponent},
-  {path: 'clientes/form', component: FormComponent},
-  {path: 'clientes/form/:id', component: FormComponent}
+  {path: 'clientes/form', component: FormComponent, canActivate: [guard], data: { expectedRol: ['admin'] }},
+  {path: 'clientes/form/:id', component: FormComponent, canActivate: [guard], data: { expectedRol: ['admin'] }},
+  { path: 'login', component: LoginComponent },
+  { path: 'registro', component: RegistroComponent },
+  { path: 'facturas/:id', component: DetalleFacturaComponent, canActivate: [guard], data: { expectedRol: ['user', 'admin'] } },
+  { path: 'facturas/form/:clienteId', component: FacturasComponent, canActivate: [guard], data: { expectedRol: ['admin'] } }
 ];
 
 @NgModule({
@@ -37,7 +51,12 @@ const routes: Routes = [
     DirectivaComponent,
     ClientesComponent,
     FormComponent,
-    PaginatorComponent
+    PaginatorComponent,
+    DetalleComponent,
+    LoginComponent,
+    RegistroComponent,
+    DetalleFacturaComponent,
+    FacturasComponent
   ],
   imports: [
     BrowserModule,
@@ -47,13 +66,18 @@ const routes: Routes = [
     BrowserAnimationsModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatAutocompleteModule,
+    MatInputModule,
+    MatFormFieldModule
   ],
   exports: [
     MatDatepickerModule,
     MatNativeDateModule
   ],
-  providers: [ClienteService, { provide: LOCALE_ID, useValue: 'es' }],
+  providers: [ClienteService,
+    { provide: LOCALE_ID, useValue: 'es' },
+    interceptorProvider],
   bootstrap: [AppComponent],
   schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
 })
